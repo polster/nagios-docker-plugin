@@ -25,8 +25,11 @@ def check_container_status(container_check_list, docker_client):
 
     global message, exit_status
 
+    log.debug('Checking Docker container status')
+
     container_status_list = []
     container_list = docker_client.containers.list(all=True)
+    exit_status = 'OK'
 
     for container in container_list:
 
@@ -95,7 +98,6 @@ def main():
         if args.check == 'container_status':
             if args.docker_names is None:
                 parser.error('ERROR: For container status checking, -d/--docker-names has to be specified')
-            log.debug('Checking Docker container status')
             check_container_status(args.docker_names, docker_client)
 
     except Exception, e:
