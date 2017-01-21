@@ -11,7 +11,8 @@ version = "1.0.0"
 plugin_description = '''Nagios plugin for Docker'''
 # The check help
 check_help = '''Docker monitoring check:
-    container_status: Checks if one or more containers specified by name are running.
+    container_status:   Checks if one or more containers specified by name are running.
+    ping:               Checks if the Docker host is responsive.
 '''
 # The Nagios supported status codes
 nagios_status_list = { 'OK' : 0 , 'WARNING' : 1, 'CRITICAL' : 2 , 'UNKNOWN' : 3}
@@ -38,6 +39,17 @@ def check_container_status(container_check_list, docker_client):
                 container_status_list.append("container: %s status: %s" % (container.name, container.status))
 
     message = ', '.join(container_status_list)
+
+def check_ping(docker_client):
+
+    global message, exit_status
+
+    log.debug('Checking Docker host is responsive')
+
+    response = docker_client.ping()
+    if response == True:
+        exit_status = 'OK'
+        message = 'Docker host is responsive'
 
 def instantiate_docker_client(url,connection_timeout_in_seconds):
 
@@ -66,7 +78,7 @@ def main():
         connection_parameters.add_argument('-H','--host', default = "unix:///var/run/docker.sock", help='''Docker host url, "unix:///var/run/docker.sock" by default''')
         connection_parameters.add_argument('-t','--timeout', default = 20, help='''Connection timeout in seconds, "20" by default''', type=int)
         parameters = parser.add_argument_group('Check parameters', 'Parameters for Docker check')
-        parameters.add_argument('-c','--check', choices=['container_status'], help=check_help, required=True)
+        parameters.add_argument('-c','--check', choices=['container_status', 'ping'], help=check_help, required=True)
         parameters.add_argument('-d','--docker_names', nargs='+', help='List containing one or more names of the containers to be checked', required=False)
 
         # in case we have no user provided arguments
