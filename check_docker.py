@@ -4,6 +4,7 @@ import sys
 import logging as log
 import argparse
 import docker
+import requests
 
 # The plugin version
 version = "1.0.0"
@@ -100,6 +101,9 @@ def main():
                 parser.error('ERROR: For container status checking, -d/--docker-names has to be specified')
             check_container_status(args.docker_names, docker_client)
 
+    except (docker.errors.APIError, requests.ConnectionError) as e:
+        message = "FAIL! %s" % e
+        exit_status = 'CRITICAL'
     except Exception, e:
         message = "FAIL! %s" % e
         exit_status = 'UNKNOWN'
