@@ -101,6 +101,9 @@ def main():
                 parser.error('ERROR: For container status checking, -d/--docker-names has to be specified')
             check_container_status(args.docker_names, docker_client)
 
+        if args.check == 'ping':
+            check_ping(docker_client)
+
     except (docker.errors.APIError, requests.ConnectionError) as e:
         message = "FAIL! %s" % e
         exit_status = 'CRITICAL'
