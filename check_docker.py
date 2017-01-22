@@ -32,17 +32,22 @@ def check_container_status(container_check_list, docker_client):
     container_list = docker_client.containers.list(all=True)
     exit_status = 'OK'
 
-    for container in container_list:
+    try:
 
-        # We are only interested in verifying if container X specified by name is running or not
-        if container.name in container_check_list:
+        for container_name in container_check_list:
+            container = docker_client.containers.get(container_name)
             if container.status != "running":
                 container_status_list.append("container: [%s] status: [%s]" % (container.name, container.status))
                 exit_status = 'CRITICAL'
             else:
                 container_status_list.append("container: %s status: %s" % (container.name, container.status))
 
-    message = ', '.join(container_status_list)
+        message = ', '.join(container_status_list)
+
+    except docker.errors.NotFound as e:
+        # Fast feedback, fail as soon as we encounter the first container specified but not present on the Docker host
+        message = "FAIL! %s" % e
+        exit_status = 'CRITICAL'
 
 def check_ping(docker_client):
 
